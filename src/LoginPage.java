@@ -26,6 +26,8 @@ public class LoginPage implements ActionListener {
     public JButton signup_label, login_label, forgot_password_label, signup_text_label, login_text_label;
     public JLabel login_container_image, login_id_label,
             login_password_label, login_email_label;
+    public static DbxRequestConfig config;
+    public static String accessToken;
 
     public void login() {
 
@@ -181,7 +183,9 @@ public class LoginPage implements ActionListener {
 
         } else if (e.getSource() == login_label) {
 
-            authorizeDetails();
+            if (loginAuthorize()) {
+                MainFrame app = new MainFrame();
+            }
 
         } else if (e.getSource() == signup_label) {
 
@@ -202,42 +206,30 @@ public class LoginPage implements ActionListener {
             }
 
             JOptionPane.showMessageDialog(null, "Signing up... Please Wait!");
-            pushDetails();
 
-            login_id.setText(login_id.getText());
-            login_password.setText(login_signup_password.getText());
-            e.setSource(login_text_label);
-            actionPerformed(e);
 
-            // UserDetails file info.dat
-            String path = "C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\" + "info.dat";
-            // Use relative path for Unix systems
-            File f = new File(path);
-            // Works for both Windows and Linux
-            try {
-                f.getParentFile().mkdirs();
-                f.createNewFile();
-            } catch (Exception exp) {
 
-            }
+
             //Writin Personal info of user in the .info file
             try {
                 File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\" + "info.dat");
 
                 if (!file.exists()) {
+                    //file.getParentFile().mkdirs();
                     file.createNewFile();
+
+
+                    FileWriter fw = new FileWriter(file, true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw);
+
+                    //This will add a new line to the file content
+                    out.print(login_id.getText() + "\r\n");
+                    out.print(login_signup_password.getText() + "\r\n");
+                    out.print(login_email.getText() + "\r\n");
+
+                    out.close();
                 }
-
-                FileWriter fw = new FileWriter(file, true);
-                BufferedWriter bw = new BufferedWriter(fw);
-                PrintWriter out = new PrintWriter(bw);
-
-                //This will add a new line to the file content
-                out.print(login_id.getText() + "\\r\\n");
-                out.print(login_signup_password.getText()+"\\r\\n");
-                out.print(login_email.getText()+"\\r\\n");
-
-                out.close();
             }
 
             catch (IOException ioe) {
@@ -245,55 +237,128 @@ public class LoginPage implements ActionListener {
                 ioe.printStackTrace();
             }
 
+            //uploading info.dat
 
+            if (pushDetails()) {
 
+                // Redirection to login window
+                JOptionPane.showMessageDialog(null, "Signup successful! Please login.");
+                login_id.setText(login_id.getText());
+                login_password.setText(login_signup_password.getText());
+                e.setSource(login_text_label);
+                actionPerformed(e);
+            } else {
+                login_id.setText("");
+                login_signup_password.setText("");
+                login_email.setText("");
+            }
 
 
         }
     }
 
     // For signup
-    public void pushDetails() {
+    public boolean pushDetails() {
 
-        // Get your app key and secret from the Dropbox developers website.
-        final String APP_KEY = "xnaszs0wlgoliac";
-        final String APP_SECRET = "1ypt7e9jcn6xf17";
+        if (!authorizeDetails()) {
 
-        DbxAppInfo appInfo = new DbxAppInfo(APP_KEY, APP_SECRET);
+            try {
 
-        DbxRequestConfig config = new DbxRequestConfig(
-                "JavaTutorial/1.0", Locale.getDefault().toString());
-        //DbxWebAuthNoRedirect webAuth = new DbxWebAuthNoRedirect(config, appInfo);
+                DbxClient client = new DbxClient(config, accessToken);
+                // Create userInfo file
+                File infoFile = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\info.dat");
+                FileInputStream inputStream = new FileInputStream(infoFile);
 
+                DbxEntry.Folder uploadedFolder = client.createFolder('/' + (login_id.getText()).toString());
+                DbxEntry.File uploadInfoFile = client.uploadFile("/" + (login_id.getText()).toString() + "/" + "info.dat",
+                        DbxWriteMode.force(), infoFile.length(), inputStream);
+                System.out.println("Uploaded: ");
+                return true;
 
-        String accessToken = "g417_KT4mrAAAAAAAAAABluNznE270Pqc6oz2gVuACwK2JNwDdgruohDzzI9huEI";  //authFinish.accessToken;
-
-
-
-
-        try {
-            //DbxEntry.Folder uploadFolder = createFolder(String path)throws DbxException
-            DbxClient client = new DbxClient(config, accessToken);
-            System.out.println("Linked account: " + client.getAccountInfo().displayName);
-
-            // Create userInfo file
-            File infoFile = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\info.dat");
-            FileInputStream inputStream = new FileInputStream(infoFile);
-
-            DbxEntry.Folder uploadedFolder = client.createFolder('/'+(login_id.getText()).toString());
-            DbxEntry.File uploadInfoFile = client.uploadFile("/" + (login_id.getText()).toString() + "/" +"info.dat",
-                    DbxWriteMode.force(), infoFile.length(), inputStream);
-            System.out.println("Uploaded: ");
-            JOptionPane.showMessageDialog(null, "Signup successfull! Please login.");
-        } catch(Exception e) {
-            //inputStream.close();
+            } catch (Exception e) {
+                //inputStream.close();
+            }
         }
+        JOptionPane.showMessageDialog(null, "Username already exists.. Please login or try diffrent Id!");
 
+        return false;
     }
 
     // for login
     public boolean authorizeDetails() {
-        return true;
+        try {
+            DbxClient client = new DbxClient(config, accessToken);
+            DbxEntry.WithChildren listing = client.getMetadataWithChildren("/");
+            System.out.println("Files in the root path:");
+            for (DbxEntry child : listing.children) {
+                //System.out.println(child.path);
+                if (((child.path).toString()).compareTo('/'+ login_id.getText()) == 0) {
+                    return true; // Folder found
+                }
+            }
+        } catch (Exception exp) {
+
+        }
+
+        return false;
+    }
+
+    // To login check
+    public boolean loginAuthorize() {
+
+        //username validation
+        for ( char ch : ((login_id.getText()).toCharArray())) {
+            if (!( (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '.' )) {
+                JOptionPane.showMessageDialog(null, "Invalid username");
+                return false ;
+            }
+
+        }
+
+        // downloading info.dat file to authorize login
+        JOptionPane.showMessageDialog(null, "Authorising login session.. Please wait!");
+        if (authorizeDetails()) {
+
+
+            try {
+
+                DbxClient client = new DbxClient(config, accessToken);
+                FileOutputStream outputStream = new FileOutputStream("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\info.dat");
+                DbxEntry.File downloadedFile = client.getFile("/" + (login_id.getText()).toString() + "/" +"info.dat", null, outputStream);
+                System.out.println("Metadata: " + downloadedFile.toString());
+                outputStream.close();
+
+                // reading info.dat file
+                try {
+                    File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\info.dat");
+                    FileReader fileReader = new FileReader(file);
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+                    StringBuffer stringBuffer = new StringBuffer();
+                    String line;
+                    int count = 0;
+                    while ((line = bufferedReader.readLine()) != null) {
+
+
+                        if(count == 1 && line.compareTo(String.valueOf(login_password.getPassword())) == 0) {
+                            JOptionPane.showMessageDialog(null, "Login Successful!");
+                            return true;
+
+                        }
+                        count++;
+
+
+                    }
+                    fileReader.close();
+                } catch (IOException et) {
+                    et.printStackTrace();
+                }
+
+            } catch (Exception exp) {
+            }
+        }
+        JOptionPane.showMessageDialog(null, "Invalid username or Password");
+        return false;
+
     }
 
 
@@ -301,6 +366,24 @@ public class LoginPage implements ActionListener {
 
 
     public static void main(String[] Args)throws IOException {
+
+        // Get your app key and secret from the Dropbox developers website.
+        final String APP_KEY = "xnaszs0wlgoliac";
+        final String APP_SECRET = "1ypt7e9jcn6xf17";
+
+        DbxAppInfo appInfo = new DbxAppInfo(APP_KEY, APP_SECRET);
+
+        config = new DbxRequestConfig(
+                "JavaTutorial/1.0", Locale.getDefault().toString());
+        //DbxWebAuthNoRedirect webAuth = new DbxWebAuthNoRedirect(config, appInfo);
+
+        accessToken = "g417_KT4mrAAAAAAAAAABluNznE270Pqc6oz2gVuACwK2JNwDdgruohDzzI9huEI";  //authFinish.accessToken;
+
+        try {
+            //DbxEntry.Folder uploadFolder = createFolder(String path)throws DbxException
+            DbxClient client = new DbxClient(config, accessToken);
+            System.out.println("Linked account: " + client.getAccountInfo().displayName);
+        } catch (Exception exp) {}
 
         LoginPage a = new LoginPage();
         a.login();

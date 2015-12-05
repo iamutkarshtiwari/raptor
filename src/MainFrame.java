@@ -805,7 +805,7 @@ public class MainFrame implements ActionListener{
 
 
 
-        new MainFrame();
+        //new MainFrame();
 
 	}
 
