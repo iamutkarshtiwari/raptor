@@ -21,7 +21,7 @@ import java.util.*;
 public class LoginPage implements ActionListener {
 
     public JFrame login_container;
-    public JTextField login_id, login_email;
+    public JTextField login_id, login_email, login_signup_password;
     public JPasswordField login_password;
     public JButton signup_label, login_label, forgot_password_label, signup_text_label, login_text_label;
     public JLabel login_container_image, login_id_label,
@@ -56,10 +56,15 @@ public class LoginPage implements ActionListener {
         login_password_label.setBounds(80,190,60,30);
         login_password_label.setVisible(true);
 
-        // Login password text
+        // Login password text with '*'
         login_password = new JPasswordField();
         login_password.setBounds(150, 190, 200, 30);
         login_password.setVisible(true);
+
+        // Login password text without '*'
+        login_signup_password = new JTextField();
+        login_signup_password.setBounds(150, 190, 200, 30);
+        login_signup_password.setVisible(false);
 
         //Login email label
         login_email_label = new JLabel("Email Id");
@@ -92,7 +97,7 @@ public class LoginPage implements ActionListener {
         signup_label.setBorderPainted(false);
         signup_label.setVisible(false);
 
-        // fotget password
+        // forgot password
         forgot_password_label = new JButton("Forgot password?");
         forgot_password_label.setBounds(130, 320, 140, 30);
         forgot_password_label.setOpaque(false);
@@ -139,6 +144,7 @@ public class LoginPage implements ActionListener {
         login_container.add(signup_text_label);
         login_container.add(signup_label);
         login_container.add(login_text_label);
+        login_container.add(login_signup_password);
 
         login_container.setVisible(true);
 
@@ -156,6 +162,9 @@ public class LoginPage implements ActionListener {
             login_label.setVisible(false);
             signup_text_label.setVisible(false);
             login_text_label.setVisible(true);
+            login_password.setVisible(false);
+            login_signup_password.setVisible(true);
+
 
         } else if (e.getSource() == login_text_label ) {
 
@@ -166,28 +175,125 @@ public class LoginPage implements ActionListener {
             login_label.setVisible(true);
             signup_text_label.setVisible(true);
             login_text_label.setVisible(false);
+            login_signup_password.setVisible(false);
+            login_password.setVisible(true);
+
 
         } else if (e.getSource() == login_label) {
 
             authorizeDetails();
 
-        }
-        else if (e.getSource() == signup_label) {
-            if (authorizeDetails() == true) {
-                pushDetails();
+        } else if (e.getSource() == signup_label) {
+
+            //username validation
+            for ( char ch : ((login_id.getText()).toCharArray())) {
+                if (!( (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '.' )) {
+                    JOptionPane.showMessageDialog(null, "Invalid username");
+                    return ;
+                }
+
             }
 
+            // user email validation
+            EmailValidator emailValidator = new EmailValidator();
+            if(!emailValidator.validate(login_email.getText().trim())) {
+                JOptionPane.showMessageDialog(null, "Invalid email Id");
+                return;
+            }
+
+            JOptionPane.showMessageDialog(null, "Signing up... Please Wait!");
+            pushDetails();
+
+            login_id.setText(login_id.getText());
+            login_password.setText(login_signup_password.getText());
+            e.setSource(login_text_label);
+            actionPerformed(e);
+
+            // UserDetails file info.dat
+            String path = "C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\" + "info.dat";
+            // Use relative path for Unix systems
+            File f = new File(path);
+            // Works for both Windows and Linux
+            try {
+                f.getParentFile().mkdirs();
+                f.createNewFile();
+            } catch (Exception exp) {
+
+            }
+            //Writin Personal info of user in the .info file
+            try {
+                File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\" + "info.dat");
+
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+
+                FileWriter fw = new FileWriter(file, true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw);
+
+                //This will add a new line to the file content
+                out.print(login_id.getText() + "\\r\\n");
+                out.print(login_signup_password.getText()+"\\r\\n");
+                out.print(login_email.getText()+"\\r\\n");
+
+                out.close();
+            }
+
+            catch (IOException ioe) {
+                System.out.println("Exception occurred:");
+                ioe.printStackTrace();
+            }
+
+
+
+
+
+        }
+    }
+
+    // For signup
+    public void pushDetails() {
+
+        // Get your app key and secret from the Dropbox developers website.
+        final String APP_KEY = "xnaszs0wlgoliac";
+        final String APP_SECRET = "1ypt7e9jcn6xf17";
+
+        DbxAppInfo appInfo = new DbxAppInfo(APP_KEY, APP_SECRET);
+
+        DbxRequestConfig config = new DbxRequestConfig(
+                "JavaTutorial/1.0", Locale.getDefault().toString());
+        //DbxWebAuthNoRedirect webAuth = new DbxWebAuthNoRedirect(config, appInfo);
+
+
+        String accessToken = "g417_KT4mrAAAAAAAAAABluNznE270Pqc6oz2gVuACwK2JNwDdgruohDzzI9huEI";  //authFinish.accessToken;
+
+
+
+
+        try {
+            //DbxEntry.Folder uploadFolder = createFolder(String path)throws DbxException
+            DbxClient client = new DbxClient(config, accessToken);
+            System.out.println("Linked account: " + client.getAccountInfo().displayName);
+
+            // Create userInfo file
+            File infoFile = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\info.dat");
+            FileInputStream inputStream = new FileInputStream(infoFile);
+
+            DbxEntry.Folder uploadedFolder = client.createFolder('/'+(login_id.getText()).toString());
+            DbxEntry.File uploadInfoFile = client.uploadFile("/" + (login_id.getText()).toString() + "/" +"info.dat",
+                    DbxWriteMode.force(), infoFile.length(), inputStream);
+            System.out.println("Uploaded: ");
+            JOptionPane.showMessageDialog(null, "Signup successfull! Please login.");
+        } catch(Exception e) {
+            //inputStream.close();
         }
 
     }
 
-
-    public void pushDetails() {
-
-    }
-
+    // for login
     public boolean authorizeDetails() {
-
+        return true;
     }
 
 

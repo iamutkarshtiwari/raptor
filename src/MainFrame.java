@@ -354,6 +354,20 @@ public class MainFrame implements ActionListener{
 
                 int flag = 0;
 
+                // UserDetails file info.dat
+                String path = "C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat";
+                // Use relative path for Unix systems
+                File f = new File(path);
+                // Works for both Windows and Linux
+                if (!f.exists()) {
+                    try {
+                        f.getParentFile().mkdirs();
+                        f.createNewFile();
+                    } catch (Exception exp) {
+
+                    }
+                }
+
 
                 try {
                     File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat");
