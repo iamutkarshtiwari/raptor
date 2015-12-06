@@ -12,6 +12,10 @@ import com.dropbox.core.*;
 import java.io.*;
 import java.util.*;
 
+// Include Javaxt library
+//import javaxt.io.*;
+import org.apache.commons.io.FileUtils;
+
 
 
 // Main container
@@ -340,34 +344,40 @@ public class MainFrame implements ActionListener{
 
             public void mousePressed(MouseEvent e) {
 
-                boolean mkdir = new File(FileLoader.chooser.getSelectedFile().getAbsolutePath()+"\\"+create_location.getText()+"_rap").mkdir();
-
-                // Adding created directory to arraylist
-                FileLoader.repo_path_list.add(FileLoader.chooser.getSelectedFile().getAbsolutePath() + "\\" + create_location.getText() + "_rap");
-
-
-
-                // Setting current working directory
-                FileLoader.current_working_path = FileLoader.chooser.getSelectedFile().getAbsolutePath();
-
-                // Duplicacy check
-
                 int flag = 0;
 
-                // UserDetails file info.dat
-                String path = "C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat";
-                // Use relative path for Unix systems
-                File f = new File(path);
-                // Works for both Windows and Linux
-                if (!f.exists()) {
-                    try {
-                        f.getParentFile().mkdirs();
-                        f.createNewFile();
-                    } catch (Exception exp) {
 
+
+                try {
+
+
+                    new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()).mkdir();
+                    FileUtils.copyDirectory(new File(add_location2.getText()), new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+ "\\"+ "master_1"));
+
+                    File branch = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+"\\"+"master.dat");
+                    branch.createNewFile();
+                    // Copying files for other location to Projects folder
+
+                    // Write master_1 path in master.dat
+
+                    File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+"\\"+"master.dat");
+
+                    if (!file.exists()) {
+                        file.createNewFile();
                     }
-                }
 
+                    FileWriter fw = new FileWriter(file, true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw);
+
+                    //This will add a new line to the file content
+                    out.println("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+ "\\"+ "master_1");
+                    //repo_counter++;
+
+                    out.close();
+
+
+                } catch (Exception exp) {}
 
                 try {
                     File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat");
@@ -378,7 +388,7 @@ public class MainFrame implements ActionListener{
                     while ((line = bufferedReader.readLine()) != null) {
 
 
-                        if(line.compareToIgnoreCase(FileLoader.chooser.getSelectedFile().getAbsolutePath() + "\\" + create_location.getText() + "_rap") == 0) {
+                        if(line.compareToIgnoreCase("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()) == 0) {
 
                             JOptionPane.showMessageDialog(null, "Repository already Exists!", "Redundancy", JOptionPane.INFORMATION_MESSAGE);
                             flag = 1;
@@ -402,7 +412,7 @@ public class MainFrame implements ActionListener{
 
                     // Creating a new button
 
-                    ButtonClass but = new ButtonClass((FileLoader.current_working_path + "\\" + create_location.getText() + "_rap"), repo_counter++);
+                    ButtonClass but = new ButtonClass(("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()), repo_counter++);
 
 
                     repository_list_frame.add(but.button);
@@ -427,7 +437,7 @@ public class MainFrame implements ActionListener{
                         PrintWriter out = new PrintWriter(bw);
 
                         //This will add a new line to the file content
-                        out.println(FileLoader.current_working_path + "\\" + create_location.getText() + "_rap");
+                        out.println("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText());
                         //repo_counter++;
 
                         out.close();
@@ -609,8 +619,6 @@ public class MainFrame implements ActionListener{
 
         // Reading repository path from the .dat file
 
-
-
         try {
             File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat");
             FileReader fileReader = new FileReader(file);
@@ -756,6 +764,11 @@ public class MainFrame implements ActionListener{
 
     }
 
+    public void downloadFolder(String Path) {
+
+
+
+    }
 
 
 
@@ -805,7 +818,7 @@ public class MainFrame implements ActionListener{
 
 
 
-        //new MainFrame();
+        new MainFrame();
 
 	}
 

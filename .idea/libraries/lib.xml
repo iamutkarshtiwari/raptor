@@ -2,9 +2,22 @@
   <library name="lib">
     <CLASSES>
       <root url="file://C:/Program Files/Java/dropbox-java-sdk-1.8.2/lib" />
+      <root url="file://C:/Downloads/commons-io-2.4-bin/commons-io-2.4" />
+      <root url="file://C:/commons-io-2.4" />
     </CLASSES>
-    <JAVADOC />
-    <SOURCES />
+    <JAVADOC>
+      <root url="file://C:/Downloads/commons-io-2.4-bin/commons-io-2.4/docs" />
+      <root url="file://C:/commons-io-2.4/docs" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://C:/Downloads/commons-io-2.4-bin/commons-io-2.4" />
+      <root url="file://C:/Downloads/javaxt-core_v1.7.4/src" />
+      <root url="file://C:/commons-io-2.4" />
+    </SOURCES>
+    <jarDirectory url="file://C:/commons-io-2.4" recursive="false" />
+    <jarDirectory url="file://C:/Downloads/commons-io-2.4-bin/commons-io-2.4" recursive="false" />
     <jarDirectory url="file://C:/Program Files/Java/dropbox-java-sdk-1.8.2/lib" recursive="false" />
+    <jarDirectory url="file://C:/commons-io-2.4" recursive="false" type="SOURCES" />
+    <jarDirectory url="file://C:/Downloads/commons-io-2.4-bin/commons-io-2.4" recursive="false" type="SOURCES" />
   </library>
 </component>
