@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
@@ -10,11 +11,15 @@ import java.util.ArrayList;
 public class FileLoader  {
 
 
-    public static JLabel settings, branch, sync, sync_label, merge;
+    public static JLabel settings, sync, sync_label, merge;
+    public static JButton branch;
     public static JFileChooser chooser;
     public static String current_working_path;
     public static ArrayList<JButton> repo_list = new ArrayList<JButton>();
     public static ArrayList<String> repo_path_list = new ArrayList<String>();
+    //public static JInternalFrame branchDropdown;
+    public static String currentProjectPath = null;
+    public static boolean branchTest = false;
 
 
 
@@ -31,6 +36,8 @@ public class FileLoader  {
         settings.setBounds(970, 25, 20, 20);
         settings.setVisible(true);
 
+
+
         // Branch Icon
 
         trngle = new ImageIcon("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\icons\\branch.png");
@@ -39,11 +46,29 @@ public class FileLoader  {
         newimg1 = img1.getScaledInstance(20, 30, java.awt.Image.SCALE_SMOOTH);
         trngle = new ImageIcon(newimg1);
 
-        branch = new JLabel(trngle);
+        branch = new JButton(trngle);
         branch.setBounds(10, 20, 20, 30);
         branch.setVisible(true);
 
-        // Sunc Icon
+
+        branch.addActionListener(new ActionListener() {
+                                     @Override
+                                     public void actionPerformed(ActionEvent e) {
+
+                                         MainFrame.branchDropdown.setVisible(!branchTest);
+                                         MainFrame.logDropdown.setVisible(false);
+
+                                         branchTest = !branchTest;
+
+
+                                     }
+                                 });
+
+
+                // Branch dropdown box
+
+
+                // Sunc Icon
 
         trngle = new ImageIcon("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\icons\\sync.png");
         img1 = trngle.getImage();
@@ -76,6 +101,8 @@ public class FileLoader  {
         MainFrame.top_toolbar.add(sync);
         MainFrame.top_toolbar.add(sync_label);
         MainFrame.top_toolbar.add(merge);
+
+        //MainFrame.main_container.add(branchDropdown);
     }
 
 

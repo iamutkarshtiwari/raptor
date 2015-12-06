@@ -1,5 +1,6 @@
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import java.awt.Color;
@@ -24,13 +25,18 @@ public class MainFrame implements ActionListener{
 
 
     public static boolean plus_on=false;
-	public JFrame main_container;
+	public static JFrame main_container;
     public JButton plus, add, create, clone, clone_repo, create_repo, add_file, browse;
-    public static JInternalFrame plus_frame, repository_list_frame, file_list_frame, top_toolbar, text_area_frame;
+    public static JInternalFrame plus_frame, repository_list_frame, file_list_frame, top_toolbar, text_area_frame, branchDropdown, logDropdown;
     public static JTextField add_location1, add_location2, create_location, filter_repository;
     public JLabel path, name, triangle, create_repository_image;
     public Graphics g;
-    public JTextArea text_area;
+    public static JTextArea text_area, text_area_counter;
+    public static JScrollPane scroll_pane1, scroll_pane2;
+
+    public static JTextField branchName;
+
+
 
     public static JPanel repository_list_panel;
     public static JScrollPane repository_list_scrollpane;
@@ -38,7 +44,7 @@ public class MainFrame implements ActionListener{
 
     public int plus_counter=1;
 
-    public int plus_button_width=85;
+    public int plus_button_width=120;
     public int plus_button_height=30;
     public int repo_counter=0;
 
@@ -69,6 +75,19 @@ public class MainFrame implements ActionListener{
         repository_list_panel.setLayout(null);
         repository_list_panel.setVisible(true);
         repository_list_panel.setBackground(Color.white);
+
+
+        branchDropdown = new JInternalFrame();
+        branchDropdown.setBounds(350,50,250,400);
+        branchDropdown.setVisible(false);
+        branchDropdown.setLayout(null);
+        branchDropdown.setBackground(Color.yellow);
+
+        logDropdown = new JInternalFrame();
+        logDropdown.setBounds(602,50,250,400);
+        logDropdown.setVisible(false);
+        logDropdown.setLayout(null);
+        logDropdown.setBackground(Color.cyan);
 
 
 
@@ -109,26 +128,51 @@ public class MainFrame implements ActionListener{
         top_toolbar.setBackground(Color.white);
         //top_toolbar.setEnabled(false);
 
-        text_area_frame = new JInternalFrame();
-        text_area_frame.setBounds(702, 75, 666, 675);
-        //text_area_frame.setLayout(null);
-        text_area_frame.setVisible(true);
-        text_area_frame.setBackground(Color.white);
-        //text_area_frame.setEnabled(true);
+        text_area_counter = new JTextArea(20, 675);
+        //text_area_counter.setBounds(702, 75, 20, 675);
+        //text_area.setLayout(null);
+        text_area_counter.setVisible(false);
+        text_area_counter.setBackground(Color.white);
+        //text_area.setEnabled(true);
+        text_area_counter.setEditable(false);
 
+        text_area = new JTextArea(646, 675);
+        //text_area.setBounds(722, 75, 646, 675);
 
-        text_area = new JTextArea(666, 675);
-        text_area.setBounds(702, 75, 666, 675);
         //text_area.setLayout(null);
         text_area.setVisible(false);
         text_area.setBackground(Color.white);
         //text_area.setEnabled(true);
-        text_area.setEditable(true);
+        text_area.setEditable(false);
+
+        //adding scroll to two textcomponents
+        scroll_pane1= new JScrollPane(text_area);
+        scroll_pane1.setBounds(740, 75, 616, 675);
+        scroll_pane1.setVisible(false);
+
+        scroll_pane2= new JScrollPane(text_area_counter);
+        scroll_pane2.setBounds(706, 75, 30, 675);
+        scroll_pane2.setVisible(false);
+        scroll_pane2.getVerticalScrollBar().setPreferredSize(new Dimension(0,0));
+        scroll_pane2.getVerticalScrollBar().setModel(scroll_pane1.getVerticalScrollBar().getModel());
+
+
+
+
 
 
         // North pane of plus null
         BasicInternalFrameUI bi = (BasicInternalFrameUI) plus_frame.getUI();
         bi.setNorthPane(null);
+
+        bi = (BasicInternalFrameUI) branchDropdown.getUI();
+        bi.setNorthPane(null);
+
+        bi = (BasicInternalFrameUI) logDropdown.getUI();
+        bi.setNorthPane(null);
+
+
+
 
         bi = (BasicInternalFrameUI) repository_list_frame.getUI();
         bi.setNorthPane(null);
@@ -139,8 +183,8 @@ public class MainFrame implements ActionListener{
         bi = (BasicInternalFrameUI) top_toolbar.getUI();
         bi.setNorthPane(null);
 
-        bi = (BasicInternalFrameUI) text_area_frame.getUI();
-        bi.setNorthPane(null);
+        //bi = (BasicInternalFrameUI) text_area_frame.getUI();
+        //bi.setNorthPane(null);
 
 
         // Plus frame vanish
@@ -280,7 +324,7 @@ public class MainFrame implements ActionListener{
 		plus.setBounds(31, 31, 20, 20);
 		plus.setVisible(true);
 
-		add = new JButton("Add");
+		add = new JButton("Create Branch");
 		add.setBounds(80, 15, plus_button_width, plus_button_height);
 		add.setVisible(false);
 
@@ -315,6 +359,9 @@ public class MainFrame implements ActionListener{
         create_location.setBounds(100,100,300,30);
         create_location.setVisible(false);
 
+        branchName = new JTextField();
+        branchName.setBounds(100,100,300,30);
+        branchName.setVisible(false);
 
 
 
@@ -323,8 +370,9 @@ public class MainFrame implements ActionListener{
 
 
 
-		create = new JButton("Create");
-		create.setBounds(200, 15, plus_button_width, plus_button_height);
+
+		create = new JButton("Add Project");
+		create.setBounds(210, 15, plus_button_width, plus_button_height);
 		create.setVisible(false);
 
 
@@ -573,15 +621,16 @@ public class MainFrame implements ActionListener{
 
 		plus_frame.add(add);
 		plus_frame.add(create);
-		plus_frame.add(clone);
+		//plus_frame.add(clone);
 
 		plus_frame.add(add_file);
-		plus_frame.add(clone_repo);
+		//plus_frame.add(clone_repo);
 		plus_frame.add(create_repo);
 
 		plus_frame.add(add_location1);
         plus_frame.add(add_location2);
         plus_frame.add(create_location);
+        plus_frame.add(branchName);
 
         plus_frame.add(browse);
 
@@ -604,12 +653,24 @@ public class MainFrame implements ActionListener{
 		//clone_repo.addActionListener(this);
 
 
+        // text_area_frame.add(scroll_pane1);
+        // text_area_frame.add(scroll_pane2);
+        Border bg= BorderFactory.createLineBorder(Color.blue,3);
+        text_area.setBorder(bg);
+        //Border bg1= BorderFactory.createLineBorder(Color.black,1);
+        //text_area_counter.setBorder(bg1);
+        // text_area.setVisible(true);
+        //text_area_frame.add(text_area);
+
+
+
+
 
 
 		// On plus button click
 
-        text_area_frame.add(text_area);
-        text_area_frame.add(create_repository_image);
+        //text_area_frame.add(text_area);
+        //text_area_frame.add(create_repository_image);
 
 
         // Filter Repository frame updation
@@ -653,21 +714,26 @@ public class MainFrame implements ActionListener{
 
 
 
-		main_container.add(plus_frame);
+
         //main_container.add(filter_repository);
         //repository_list_scrollpane.add(repository_list_panel);
         //repository_list_frame.add(repository_list_scrollpane);
 
         //repository_list_frame.getContentPane().add(repository_list_scrollpane, BorderLayout.CENTER);
 
-
+        main_container.add(branchDropdown);
+        main_container.add(logDropdown);
+        main_container.add(plus_frame);
         main_container.add(repository_list_frame);
         main_container.add(file_list_frame);
         main_container.add(top_toolbar);
         main_container.add(triangle);
-        main_container.add(text_area_frame);
+        //main_container.add(text_area_frame);
         main_container.add(plus);
         main_container.add(filter_repository);
+        main_container.add(scroll_pane2);
+        main_container.add(scroll_pane1);
+
 
         main_container.setVisible(true);
 
@@ -697,6 +763,8 @@ public class MainFrame implements ActionListener{
             add.setVisible(true);
             create.setVisible(true);
             clone.setVisible(true);
+            name.setVisible(true);
+            branchName.setVisible(true);
 
 
             path.setVisible(true);
@@ -717,7 +785,8 @@ public class MainFrame implements ActionListener{
 
             path.setVisible(true);
 
-            name.setVisible(false);
+            name.setVisible(true);
+            branchName.setVisible(true);
             add_location1.setVisible(true);
             add_location2.setVisible(false);
             create_location.setVisible(false);
@@ -744,6 +813,7 @@ public class MainFrame implements ActionListener{
 
         }
 
+        /*
         // Clone Pressed
         if (e.getSource() == clone) {
 
@@ -760,6 +830,7 @@ public class MainFrame implements ActionListener{
 
 
         }
+        */
 
 
     }
