@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -11,8 +11,8 @@ import java.util.ArrayList;
 public class FileLoader  {
 
 
-    public static JLabel settings, sync, sync_label, merge;
-    public static JButton branch;
+    public static JLabel settings, sync, sync_label;
+    public static JButton branch, merge;
     public static JFileChooser chooser;
     public static String current_working_path;
     public static ArrayList<JButton> repo_list = new ArrayList<JButton>();
@@ -20,6 +20,7 @@ public class FileLoader  {
     //public static JInternalFrame branchDropdown;
     public static String currentProjectPath = null;
     public static boolean branchTest = false;
+    public static boolean sizeCollapse;
 
 
 
@@ -60,6 +61,113 @@ public class FileLoader  {
 
                                          branchTest = !branchTest;
 
+                                         /// Branch list
+
+                                         File dir = new File(FileLoader.currentProjectPath);
+                                         //System.out.println(this.path);
+                                         File[] files = dir.listFiles();
+
+                                         int y = 5;
+                                         for (File afile : files) {
+
+                                             if ((afile.getAbsolutePath().substring(afile.getAbsolutePath().lastIndexOf('.') + 1)).compareTo("dat") == 0) {
+
+                                                 JButton branchButton = new JButton(afile.getAbsolutePath().substring(afile.getAbsolutePath().lastIndexOf('\\') + 1,afile.getAbsolutePath().lastIndexOf('.')  ));
+
+                                                 branchButton.setBounds(0, y, 250, 40);
+                                                 y+=40;
+                                                 branchButton.setVisible(true);
+                                                 MainFrame.branchDropdown.add(branchButton);
+                                                 sizeCollapse = true;
+
+                                                 branchButton.addActionListener(new ActionListener() {
+                                                     @Override
+                                                     public void actionPerformed(ActionEvent e) {
+
+                                                         MainFrame.currentBranch = branchButton.getText();
+                                                         merge.setEnabled(true);
+
+                                                         MainFrame.logDropdown.setVisible(sizeCollapse);
+                                                         sizeCollapse = !sizeCollapse;
+                                                         MainFrame.logDropdown.getContentPane().removeAll();
+                                                         MainFrame.logDropdown.getContentPane().repaint();
+
+                                                         // Reading repository path from the .dat file
+                                                         int y = 5;
+                                                         try {
+                                                             File file = new File(FileLoader.currentProjectPath + "\\" + branchButton.getText() + ".dat");
+                                                             System.out.println(FileLoader.currentProjectPath + "\\" + branchButton.getText() + ".dat");
+                                                             FileReader fileReader = new FileReader(file);
+                                                             BufferedReader bufferedReader = new BufferedReader(fileReader);
+                                                             StringBuffer stringBuffer = new StringBuffer();
+                                                             String line;
+                                                             while ((line = bufferedReader.readLine()) != null) {
+
+
+
+                                                                 JButton but = new JButton(line.substring(line.lastIndexOf('\\')+1));
+                                                                 but.setBounds(0, y, 250, 40);
+                                                                 y+=40;
+                                                                 but.setVisible(true);
+                                                                 MainFrame.logDropdown.add(but);
+
+                                                                 MainFrame.logDropdown.repaint();
+
+                                                                 but.addActionListener(new ActionListener() {
+                                                                     @Override
+                                                                     public void actionPerformed(ActionEvent e) {
+                                                                         MainFrame.file_list_frame.getContentPane().removeAll();
+                                                                         MainFrame.file_list_frame.getContentPane().repaint();
+
+                                                                         // Repaint file list
+
+                                                                         MainFrame.logDropdown.setVisible(false);
+                                                                         MainFrame.branchDropdown.setVisible(false);
+                                                                         int index = 0;
+
+
+                                                                         File dir = new File(FileLoader.currentProjectPath + "\\" + but.getText());
+                                                                         //System.out.println(this.path);
+                                                                         File[] files = dir.listFiles();
+
+                                                                         for (File afile : files) {
+
+                                                                             FileButtonClass a = new FileButtonClass(afile.getAbsolutePath(), index++);
+                                                                             MainFrame.file_list_frame.add(a.file_button);
+                                                                             MainFrame.file_list_frame.repaint();
+
+                                                                         }
+
+
+
+
+                                                                     }
+                                                                 });
+                                                                 //repository_list_panel.revalidate();
+                                                                 //repository_list_scrollpane.repaint();
+
+
+                                                             }
+                                                             fileReader.close();
+                                                         }
+
+                                                         catch (Exception exp) {
+                                                             //e.printStackTrace();
+                                                         }
+
+
+
+
+                                                         //MainFrame
+
+
+
+                                                     }
+                                                 });
+
+                                             }
+                                         }
+
 
                                      }
                                  });
@@ -91,12 +199,30 @@ public class FileLoader  {
         newimg1 = img1.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
         trngle = new ImageIcon(newimg1);
 
-        merge = new JLabel(trngle);
-        merge.setBounds(830, 25, 20, 20);
+        merge = new JButton("Enter Commit message");
+        merge.setBounds(650, 25, 200, 20);
         merge.setVisible(true);
+        merge.setEnabled(false);
+
+        // create commits
+        merge.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
 
 
-        MainFrame.top_toolbar.add(settings);
+                                        //MainFrame.commit_message_label.setVisible(MainFrame.commit_boolean);
+                                        //MainFrame.commit_message_text.setVisible(MainFrame.commit_boolean);
+                                        MainFrame.commit_message.setVisible(MainFrame.commit_boolean);
+                                        MainFrame.commit_message.getContentPane().repaint();
+                                        MainFrame.commit_boolean = !MainFrame.commit_boolean;
+
+
+                                    }
+                                });
+
+
+
+                MainFrame.top_toolbar.add(settings);
         MainFrame.top_toolbar.add(branch);
         MainFrame.top_toolbar.add(sync);
         MainFrame.top_toolbar.add(sync_label);
@@ -122,6 +248,32 @@ public class FileLoader  {
             //File pathname= chooser.getCurrentDirectory();
 
             MainFrame.add_location2.setText(chooser.getSelectedFile().getAbsolutePath());
+
+            try {
+                File file = new File(FileLoader.currentProjectPath+"\\"+"info.dat");
+
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+
+                FileWriter fw = new FileWriter(file, true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw);
+
+                //This will add a new line to the file content
+                out.println(chooser.getSelectedFile().getAbsolutePath());
+                //repo_counter++;
+
+                out.close();
+
+
+            }
+
+            catch (IOException ioe) {
+                System.out.println("Exception occurred:");
+                ioe.printStackTrace();
+            }
+
             // System.out.println("getSelectedFile() : " + chooser.getSelectedFile());
         }
         //new File(chooser.getCurrentDirectory()).mkdir();

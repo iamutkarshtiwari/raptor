@@ -1,0 +1,31 @@
+emaphore Customers = 0;
+Semaphore Barber = 0;
+Mutex accessSeats = 1;
+int NumberOfFreeSeats = N; 
+
+Barber {
+    while(1) {
+        sem_wait(Customers) // waits for a customer (sleeps)
+        sem_wait(accessSeats) // mutex to protect the number of available seats
+        NumberOfFreeSeats++ // a chair gets free
+        sem_post(Barber) // bring customer for haircut
+        sem_post(accessSeats) // release the mutex on the chair
+        // barber is cutting hair
+    }
+}
+
+Customer {
+    while(1) {
+        sem_wait(accessSeats) // protects seats so only 1 thread tries to sit in a chair if that's the case
+        if(NumberOfFreeSeats > 0) {
+            NumberOfFreeSeats-- // sitting down
+            sem_post(Customers) // notify the barber
+            sem_post(accessSeats) // release the lock
+            sem_wait(Barber) // wait in the waiting room if barber is busy
+            // customer is having hair cut
+        } else {
+            sem_post(accessSeats) // release the lock
+            // customer leaves
+        }
+   }
+}

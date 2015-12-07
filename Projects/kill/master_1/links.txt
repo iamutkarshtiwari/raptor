@@ -1,0 +1,2 @@
+http://web.cecs.pdx.edu/~harry/Blitz/OSProject/p3/SleepingBarberProblem.pdf
+https://www.cs.mtu.edu/~shene/NSF-3/e-Book/SEMA/TM-example-smoker.html

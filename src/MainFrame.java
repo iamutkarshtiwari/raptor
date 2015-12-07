@@ -1,4 +1,5 @@
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
@@ -11,6 +12,8 @@ import java.io.*;
 // Include the Dropbox SDK.
 import com.dropbox.core.*;
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 // Include Javaxt library
@@ -29,12 +32,21 @@ public class MainFrame implements ActionListener{
     public JButton plus, add, create, clone, clone_repo, create_repo, add_file, browse;
     public static JInternalFrame plus_frame, repository_list_frame, file_list_frame, top_toolbar, text_area_frame, branchDropdown, logDropdown;
     public static JTextField add_location1, add_location2, create_location, filter_repository;
-    public JLabel path, name, triangle, create_repository_image;
+    public static JLabel path, name, triangle, create_repository_image, currentRepository, currentRepository_label;
     public Graphics g;
     public static JTextArea text_area, text_area_counter;
     public static JScrollPane scroll_pane1, scroll_pane2;
+    public static JInternalFrame commit_message;
+    public static JLabel commit_message_label;
+    public static JTextField commit_message_text;
+    public static String currentBranch;
+
+    public static boolean commit_boolean = false;
 
     public static JTextField branchName;
+
+    public static int currentProjectNumber;
+
 
 
 
@@ -63,11 +75,156 @@ public class MainFrame implements ActionListener{
         //plus_frame.setEnabled(false);
 
 
+
+
+
+
+
+/*
+        commit_message_label = new JLabel("Enter commit message");
+        commit_message_label.setBounds(50,10,150,10);
+        commit_message_label.setBackground(Color.WHITE);
+        commit_message_label.setVisible(true);
+*/
+        commit_message_text = new JTextField();
+        commit_message_text.setBounds(10, 10, 100, 30);
+        commit_message_text.setBackground(Color.WHITE);
+        commit_message_text.setVisible(true);
+
+
+        commit_message_text.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent evt) {
+
+
+            }
+
+
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+
+
+                    try {
+                        System.out.println(FileLoader.currentProjectPath + "\\" + currentBranch + ".dat");
+
+                        LineNumberReader lnr = new LineNumberReader(new FileReader(new File(FileLoader.currentProjectPath +
+                                "\\" + currentBranch + ".dat")));
+                        System.out.println("check");
+                        lnr.skip(Long.MAX_VALUE);
+
+                        int count = lnr.getLineNumber() + 1;
+                        lnr.close();
+
+
+                        BufferedReader brTest = new BufferedReader(new FileReader(FileLoader.currentProjectPath + "\\" + "info.log"));
+
+                        new File(FileLoader.currentProjectPath + "\\" + currentBranch + "_" + String.valueOf(count + 1)).mkdir();
+
+                        String testpath ="";
+                        try {
+                            File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat");
+                            FileReader fileReader = new FileReader(file);
+                            BufferedReader bufferedReader = new BufferedReader(fileReader);
+                            StringBuffer stringBuffer = new StringBuffer();
+                            String line;
+                            int ccount = 1;
+                            while ((line = bufferedReader.readLine()) != null) {
+
+
+                                if(ccount == currentProjectNumber) {
+                                    testpath = line;
+                                }
+                                ccount ++;
+
+
+                            }
+                            fileReader.close();
+                        }
+
+                        catch (IOException et) {
+                            et.printStackTrace();
+                        }
+
+
+                        FileUtils.copyDirectory(new File(testpath), new File(FileLoader.currentProjectPath + "\\" + currentBranch + "_" + String.valueOf(count + 1)));
+
+
+                        JOptionPane.showMessageDialog(null, "Commmit pushed!");
+
+
+                        File file = new File(FileLoader.currentProjectPath + "\\" + branchName.getText() + ".dat");
+                        file.createNewFile();
+                        File log = new File(FileLoader.currentProjectPath + "\\" + branchName.getText() + ".log");
+                        log.createNewFile();
+                        JOptionPane.showMessageDialog(null, "Branch created!");
+
+
+                        FileWriter fw = new FileWriter(file, true);
+                        BufferedWriter bw = new BufferedWriter(fw);
+                        PrintWriter out = new PrintWriter(bw);
+
+                        //This will add a new line to the file content
+                        out.println(FileLoader.currentProjectPath + "\\" + branchName.getText() + "_1");
+                        //repo_counter++;
+
+                        out.close();
+
+                        fw = new FileWriter(log, true);
+                        bw = new BufferedWriter(fw);
+                        out = new PrintWriter(bw);
+
+
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                        Date date = new Date();
+                        //System.out.println(dateFormat.format(date));
+                        //This will add a new line to the file content
+                        out.println(dateFormat.format(date));
+
+                        out.close();
+
+
+                    } catch (Exception exp) {
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
+
+
+
+        commit_message = new JInternalFrame();
+        commit_message.setBounds(1000, 80, 250,50);
+        commit_message.setBackground(Color.CYAN);
+        commit_message.setVisible(false);
+
+        //commit_message.add(commit_message_label);
+        commit_message.add(commit_message_text);
+
+
+
+
+
+
         repository_list_frame = new JInternalFrame();
         repository_list_frame.setBounds(0, 112, 300, 675);
         repository_list_frame.setLayout(null);
         repository_list_frame.setVisible(true);
         repository_list_frame.setBackground(Color.white);
+
+        currentRepository = new JLabel("");
+        currentRepository.setBounds(100, 30, 200, 40);
+        currentRepository.setVisible(true);
+
+        currentRepository_label = new JLabel("Current Repository");
+        currentRepository_label.setBounds(100, 20, 200, 20);
+        currentRepository_label.setVisible(true);
 
 
         repository_list_panel = new JPanel();
@@ -170,6 +327,10 @@ public class MainFrame implements ActionListener{
 
         bi = (BasicInternalFrameUI) logDropdown.getUI();
         bi.setNorthPane(null);
+
+        bi = (BasicInternalFrameUI) commit_message.getUI();
+        bi.setNorthPane(null);
+
 
 
 
@@ -300,14 +461,21 @@ public class MainFrame implements ActionListener{
 
 
 
+        /*
+        // = new ImageIcon("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\icons\\raptor.jpg");
+        trngle = new ImageIcon(ImageIO.read(new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\icons\\raptor.jpg")));
+        img1 = trngle.getImage() ;
+        newimg1 = img1.getScaledInstance(1366 ,768,  java.awt.Image.SCALE_SMOOTH ) ;
+        trngle = new ImageIcon( newimg1 ); */
 
-
-
+        //main_container = new JFrame(trngle);
         main_container = new JFrame();
 		main_container.setSize(1366,768);
 		main_container.setLayout(null);
         main_container.getContentPane().setBackground(Color.WHITE);
 		main_container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
 
 
 
@@ -328,14 +496,64 @@ public class MainFrame implements ActionListener{
 		add.setBounds(80, 15, plus_button_width, plus_button_height);
 		add.setVisible(false);
 
-		// add image
-		Image img = add_file_image.getImage() ;
-		Image newimg = img.getScaledInstance(60,50,  java.awt.Image.SCALE_SMOOTH ) ;
-		ImageIcon icon = new ImageIcon( newimg );
+        // add image
+        Image img = add_file_image.getImage() ;
+        Image newimg = img.getScaledInstance(60,50,  java.awt.Image.SCALE_SMOOTH ) ;
+        ImageIcon icon = new ImageIcon( newimg );
 
-		add_file = new JButton(icon);
-		add_file.setBounds(220,230,60,50);
-		add_file.setVisible(false);
+
+
+        add_file = new JButton(icon);
+        add_file.setBounds(220,230,60,50);
+        add_file.setVisible(false);
+
+        // Branch creation
+        add_file.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+
+                try {
+                    new File(FileLoader.currentProjectPath + "\\" + branchName.getText() + "_1").mkdir();
+                    File file = new File(FileLoader.currentProjectPath + "\\" + branchName.getText() + ".dat");
+                    file.createNewFile();
+                    File log = new File(FileLoader.currentProjectPath + "\\" + branchName.getText() + ".log");
+                    log.createNewFile();
+                    JOptionPane.showMessageDialog(null, "Branch created!");
+
+
+                    FileWriter fw = new FileWriter(file, true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw);
+
+                    //This will add a new line to the file content
+                    out.println(FileLoader.currentProjectPath + "\\" + branchName.getText() + "_1");
+                    //repo_counter++;
+
+                    out.close();
+
+                    fw = new FileWriter(log, true);
+                    bw = new BufferedWriter(fw);
+                    out = new PrintWriter(bw);
+
+
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    Date date = new Date();
+                    //System.out.println(dateFormat.format(date));
+                    //This will add a new line to the file content
+                    out.println(dateFormat.format(date));
+
+                    out.close();
+
+
+                } catch (Exception exp) {
+                }
+            }
+
+        });
+
+
+
 
 
 		// add text location
@@ -404,25 +622,64 @@ public class MainFrame implements ActionListener{
 
                     File branch = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+"\\"+"master.dat");
                     branch.createNewFile();
+                    branch = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+"\\"+"master.log");
+                    branch.createNewFile();
+                    branch = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+"\\"+"info.log");
+                    branch.createNewFile();
+
+                    FileWriter fw = new FileWriter(branch, true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw);
+
+                    LineNumberReader lnr = new LineNumberReader(new FileReader(new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat")));
+//                   System.out.println("check");
+                    lnr.skip(Long.MAX_VALUE);
+
+                    int count = lnr.getLineNumber() + 1;
+                    lnr.close();
+
+                    //This will add a new line to the file content
+                    out.println(count);
+                    //repo_counter++;
+
+                    out.close();
                     // Copying files for other location to Projects folder
 
                     // Write master_1 path in master.dat
 
                     File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+"\\"+"master.dat");
+                    File log = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+"\\"+"master.log");
 
                     if (!file.exists()) {
                         file.createNewFile();
                     }
 
-                    FileWriter fw = new FileWriter(file, true);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    PrintWriter out = new PrintWriter(bw);
+                    fw = new FileWriter(file, true);
+                    bw = new BufferedWriter(fw);
+                    out = new PrintWriter(bw);
 
                     //This will add a new line to the file content
                     out.println("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\Projects" + "\\" + create_location.getText()+ "\\"+ "master_1");
                     //repo_counter++;
 
                     out.close();
+
+                    fw = new FileWriter(log, true);
+                    bw = new BufferedWriter(fw);
+                    out = new PrintWriter(bw);
+
+
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    Date date = new Date();
+                    //System.out.println(dateFormat.format(date));
+                    //This will add a new line to the file content
+                    out.println(dateFormat.format(date));
+
+                    //repo_counter++;
+
+                    out.close();
+
+
 
 
                 } catch (Exception exp) {}
@@ -472,7 +729,6 @@ public class MainFrame implements ActionListener{
 
                     // Inserting repository paths in the .dat file
 
-
                     try {
                         File file = new File("C:\\Users\\Utkarsh\\IdeaProjects\\raptor\\src\\data\\repository_list.dat");
 
@@ -480,6 +736,7 @@ public class MainFrame implements ActionListener{
                             file.createNewFile();
                         }
 
+                        //System.out.println("hey");/
                         FileWriter fw = new FileWriter(file, true);
                         BufferedWriter bw = new BufferedWriter(fw);
                         PrintWriter out = new PrintWriter(bw);
@@ -497,6 +754,8 @@ public class MainFrame implements ActionListener{
                         System.out.println("Exception occurred:");
                         ioe.printStackTrace();
                     }
+
+
 
 
                     JOptionPane.showMessageDialog(null, "Repository created!", "Alert", JOptionPane.INFORMATION_MESSAGE);
@@ -648,7 +907,7 @@ public class MainFrame implements ActionListener{
 		create.addActionListener(this);
 		clone.addActionListener(this);
 
-		add_file.addActionListener(this);
+		//add_file.addActionListener(this);
 		create_repo.addActionListener(this);
 		//clone_repo.addActionListener(this);
 
@@ -721,9 +980,12 @@ public class MainFrame implements ActionListener{
 
         //repository_list_frame.getContentPane().add(repository_list_scrollpane, BorderLayout.CENTER);
 
+        main_container.add(commit_message);
         main_container.add(branchDropdown);
         main_container.add(logDropdown);
         main_container.add(plus_frame);
+        main_container.add(currentRepository);
+        main_container.add(currentRepository_label);
         main_container.add(repository_list_frame);
         main_container.add(file_list_frame);
         main_container.add(top_toolbar);
@@ -761,15 +1023,18 @@ public class MainFrame implements ActionListener{
 
             plus_frame.setVisible(true);
             add.setVisible(true);
+            add_file.setVisible(true);
             create.setVisible(true);
             clone.setVisible(true);
             name.setVisible(true);
             branchName.setVisible(true);
 
 
-            path.setVisible(true);
-            browse.setVisible(true);
-            add_location1.setVisible(true);
+            path.setVisible(false);
+            browse.setVisible(false);
+            add_location1.setVisible(false);
+            add_location2.setVisible(false);
+            create_location.setVisible(false);
 
 
         }
@@ -783,14 +1048,14 @@ public class MainFrame implements ActionListener{
             //clone_repo.setVisible(false);
             plus_frame.setSize(500, 300);
 
-            path.setVisible(true);
+            path.setVisible(false);
 
             name.setVisible(true);
             branchName.setVisible(true);
-            add_location1.setVisible(true);
+            add_location1.setVisible(false);
             add_location2.setVisible(false);
             create_location.setVisible(false);
-            browse.setVisible(true);
+            browse.setVisible(false);
 
 
         }

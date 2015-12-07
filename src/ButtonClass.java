@@ -55,6 +55,7 @@ public class ButtonClass implements ActionListener {
         MainFrame.file_list_frame.getContentPane().repaint();
 
         int index = 0;
+        MainFrame.currentRepository.setText(this.name);
 
 
         File dir = new File(this.path + "\\" + "master_1");
@@ -68,113 +69,6 @@ public class ButtonClass implements ActionListener {
             MainFrame.file_list_frame.repaint();
 
         }
-
-        /// Branch list
-
-        dir = new File(FileLoader.currentProjectPath);
-        //System.out.println(this.path);
-        files = dir.listFiles();
-
-        int y = 5;
-        for (File afile : files) {
-
-            if ((afile.getAbsolutePath().substring(afile.getAbsolutePath().lastIndexOf('.') + 1)).compareTo("dat") == 0) {
-
-                JButton branchButton = new JButton(afile.getAbsolutePath().substring(afile.getAbsolutePath().lastIndexOf('\\')+1, afile.getAbsolutePath().lastIndexOf('.')));
-
-                branchButton.setBounds(0, y, 250, 40);
-                y+=40;
-                branchButton.setVisible(true);
-                MainFrame.branchDropdown.add(branchButton);
-                sizeCollapse = true;
-
-                branchButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-
-                        MainFrame.logDropdown.setVisible(sizeCollapse);
-                        sizeCollapse = !sizeCollapse;
-                        MainFrame.logDropdown.getContentPane().removeAll();
-                        MainFrame.logDropdown.getContentPane().repaint();
-
-                        // Reading repository path from the .dat file
-                        int y = 5;
-                        try {
-                            File file = new File(FileLoader.currentProjectPath + "\\" + branchButton.getText() + ".dat");
-                            System.out.println(FileLoader.currentProjectPath + "\\" + branchButton.getText() + ".dat");
-                            FileReader fileReader = new FileReader(file);
-                            BufferedReader bufferedReader = new BufferedReader(fileReader);
-                            StringBuffer stringBuffer = new StringBuffer();
-                            String line;
-                            while ((line = bufferedReader.readLine()) != null) {
-
-
-
-                                JButton but = new JButton(line.substring(line.lastIndexOf('\\')+1));
-                                but.setBounds(0, y, 250, 40);
-                                y+=40;
-                                but.setVisible(true);
-                                MainFrame.logDropdown.add(but);
-
-                                MainFrame.logDropdown.repaint();
-
-                                but.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        MainFrame.file_list_frame.getContentPane().removeAll();
-                                        MainFrame.file_list_frame.getContentPane().repaint();
-
-                                        // Repaint file list
-
-                                        MainFrame.logDropdown.setVisible(false);
-                                        MainFrame.branchDropdown.setVisible(false);
-                                        int index = 0;
-
-
-                                        File dir = new File(FileLoader.currentProjectPath + "\\" + but.getText());
-                                        //System.out.println(this.path);
-                                        File[] files = dir.listFiles();
-
-                                        for (File afile : files) {
-
-                                            FileButtonClass a = new FileButtonClass(afile.getAbsolutePath(), index++);
-                                            MainFrame.file_list_frame.add(a.file_button);
-                                            MainFrame.file_list_frame.repaint();
-
-                                        }
-
-
-
-
-                                    }
-                                });
-                                //repository_list_panel.revalidate();
-                                //repository_list_scrollpane.repaint();
-
-
-                            }
-                            fileReader.close();
-                        }
-
-                        catch (Exception exp) {
-                            //e.printStackTrace();
-                        }
-
-
-
-
-                        //MainFrame
-
-
-
-                    }
-                });
-
-            }
-        }
-
-
-
 
     }
 }

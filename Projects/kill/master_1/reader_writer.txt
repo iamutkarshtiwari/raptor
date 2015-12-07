@@ -1,0 +1,48 @@
+#include<iostream>
+#include<stdio.h>
+#include<pthread.h>
+#include<semaphore.h>
+using namespace std;
+sem_t mutex;
+sem_t rwmutex;
+int readcount=0;
+void *read(void *a)
+{
+int j=(int)a;
+sem_wait(&mutex);
+readcount++;
+if(readcount==1)
+{
+sem_wait(&rwmutex);
+cout<<j<<"reading"<<endl;
+}
+sem_post(&mutex);
+
+sem_wait(&mutex);
+readcount--;
+if(readcount==0)
+sem_post(&rwmutex);
+sem_post(&mutex);
+}
+void *write(void *a)
+{
+int j=(int)a;
+sem_wait(&rwmutex);
+cout<<j<<"writing"<<endl;
+sem_post(&rwmutex);
+}
+int main()
+{
+sem_init(&mutex,0,1);
+sem_init(&rwmutex,0,1);
+pthread_t p1[12],p2[12];
+int j=1,k=2,i;
+for(i=0;i<5;i++)
+pthread_create(&p1[i],NULL,write,(void*)i);
+for(i=0;i<5;i++)
+pthread_create(&p2[i],NULL,read,(void*)i);
+for(i=0;i<5;i++)
+pthread_join(p1[i],NULL);
+for(i=0;i<5;i++)
+pthread_join(p2[i],NULL);
+}
